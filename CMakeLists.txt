@@ -7,4 +7,7 @@ project(NotLab)
 
 set(CMAKE_CXX_STANDARD 20)
 
+add_subdirectory(core)
+
 add_executable(NotLab src/main.cpp)
+target_link_libraries(NotLab core)
