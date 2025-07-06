@@ -1,0 +1,11 @@
+build/
+build-*/
+
+*.vcxproj*
+*.sln
+*.suo
+*.user
+*.vcxproj.filters
+.vscode/
+.idea/
+*.iml
