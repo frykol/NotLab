@@ -7,17 +7,48 @@
 namespace notlab
 {
     template<typename T>
+    struct is_vector_type_valid : std::false_type {};
+
+    template<> struct is_vector_type_valid<int>: std::true_type{};
+    template<> struct is_vector_type_valid<float>: std::true_type{};
+    template<> struct is_vector_type_valid<double>: std::true_type{};
+
+
+    template<typename T>
     class Vector{
+        static_assert(is_vector_type_valid<T>::value, "This type is not valid");
         private:
             std::vector<T> m_data;
 
-        public:
+
             Vector(std::initializer_list<T> list): m_data(list) {}
             explicit Vector(size_t cap): m_data(cap) {}
+
+        public:
+            static Vector<T> zeros(size_t n){
+                Vector<T> v(n);
+                return v;
+            }
+
+            static Vector<T> fromList(std::initializer_list<T> list){
+                return Vector<T>(list);
+            }
 
             void operator=(std::initializer_list<T> list){
                 m_data = list;
                 
+            }
+
+            void addBack(T element){
+                m_data.push_back(element);
+            }
+            void addBack(const Vector<T>& vector){
+                m_data.insert(m_data.end(), vector.m_data.begin(), vector.m_data.end());
+            }
+
+
+            void addFront(T& element){
+                m_data.insert(m_data.begin(), element);
             }
             
             size_t getSize() const {return m_data.size();}
