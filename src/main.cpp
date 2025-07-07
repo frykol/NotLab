@@ -1,50 +1,38 @@
 #include <iostream>
 #include "vector.h"
+#include "matrix.h"
 
 int main(void){
-    
-    // notlab::VectorI ab = {1, 3};
-    // notlab::VectorI bb = {3,5};
-    // notlab::VectorF cc = {3.4, 2.2};
-    // notlab::VectorF res = ab + bb - cc;
+    // notlab::VectorI test = notlab::VectorI::fromList({1,3,4,24});
+    // std::cout << test.toString() << std::endl;
+    // std::cout << test.getSize() << std::endl;
 
-    // std::cout << res.toString() << std::endl;
+    // notlab::VectorI zeros = notlab::VectorI::zeros(10);
+    // std::cout << zeros.toString() << std::endl;
+    // std::cout << zeros.getSize() << std::endl;
 
-    // res = 2 * res * 2;
-    // std::cout << res.toString() << std::endl;
+    // zeros[3] = 5;
 
-    // res = res / 2;
-    // std::cout << res.toString() << std::endl;
+    // std::cout << zeros.toString() << std::endl;
+    // std::cout << zeros.getSize() << std::endl;
 
-    // res = res / ab;
+    // int* ptest = &zeros[3];
 
-    // std::cout << res.toString() << std::endl;
+    // zeros.addBack(3);
+    // zeros.addBack(test);
+    // zeros.addFront(159);
+    // zeros.addFront(test);
 
-    // notlab::VectorI ff = {1, 3};
-    // notlab::VectorI gg = {3,2};
+    // test.addBack(100);
 
-    // notlab::VectorI hh = ff / gg;
-    // std::cout << hh.toString() << std::endl;
+    // std::cout << zeros.toString() << std::endl;
+    // std::cout << zeros.getSize() << std::endl;
+    // std::cout << *ptest << std::endl;
 
-    notlab::VectorI test = notlab::VectorI::fromList({1,3,4});
-    std::cout << test.toString() << std::endl;
-    std::cout << test.getSize() << std::endl;
-
-    notlab::VectorI zeros = notlab::VectorI::zeros(10);
-    std::cout << zeros.toString() << std::endl;
-    std::cout << zeros.getSize() << std::endl;
-
-    zeros[3] = 5;
+    notlab::MatrixI zeros = notlab::MatrixI::zeros(3, 2);
 
     std::cout << zeros.toString() << std::endl;
-    std::cout << zeros.getSize() << std::endl;
-
-    zeros.addBack(10);
-    zeros.addBack(test);
-
-
-    std::cout << zeros.toString() << std::endl;
-    std::cout << zeros.getSize() << std::endl;
+    std::cout << zeros(3,1) << std::endl;
 
     return 0;
 }

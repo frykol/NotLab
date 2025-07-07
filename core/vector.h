@@ -34,12 +34,7 @@ namespace notlab
                 return Vector<T>(list);
             }
 
-            void operator=(std::initializer_list<T> list){
-                m_data = list;
-                
-            }
-
-            void addBack(T element){
+            void addBack(const T& element){
                 m_data.push_back(element);
             }
             void addBack(const Vector<T>& vector){
@@ -47,13 +42,30 @@ namespace notlab
             }
 
 
-            void addFront(T& element){
+            void addFront(const T& element){
                 m_data.insert(m_data.begin(), element);
+            }
+            void addFront(const Vector<T>& vector){
+                m_data.insert(m_data.begin(), vector.m_data.begin(), vector.m_data.end());
             }
             
             size_t getSize() const {return m_data.size();}
 
+
+
+            void operator=(std::initializer_list<T> list){
+                m_data.erase();
+                m_data = list;
+                
+            }
+
             T& operator[](size_t i) {
+                if (i + 1 > m_data.size()){
+                    throw std::runtime_error("Index out of bounds");
+                }
+                return m_data[i];
+            }
+            T& operator()(size_t i){
                 if (i + 1 > m_data.size()){
                     throw std::runtime_error("Index out of bounds");
                 }
@@ -66,19 +78,6 @@ namespace notlab
                 }
                 return m_data[i];
             }
-
-            // Vector<T> operator+(const Vector<T>& second) const{
-            //     if( this->getSize() != second.getSize()){
-            //         throw std::runtime_error("Length of vectors don't match");
-            //     }
-            //     Vector<T> resoult(getSize());
-            //     for(size_t i = 0; i<getSize(); i++){
-            //         resoult[i] = m_data[i] + second[i];
-            //     }
-            //     return resoult;
-
-            // }
-
 
             std::string toString(){
                 std::stringstream ss;
@@ -96,6 +95,7 @@ namespace notlab
 
     using VectorI = Vector<int>;
     using VectorF = Vector<float>;
+    using VectorD = Vector<double>;
 
     template<typename T, typename U, typename Op>
     auto elementwise(const Vector<T>& left, const Vector<U>& right, Op operation){
