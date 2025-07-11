@@ -29,10 +29,41 @@ int main(void){
     // std::cout << zeros.getSize() << std::endl;
     // std::cout << *ptest << std::endl;
 
-    notlab::MatrixI zeros = notlab::MatrixI::zeros(3, 2);
+
+    notlab::VectorI first = notlab::VectorI::fromList({1,2,3,7});
+    notlab::VectorF second = notlab::VectorF::fromList({1.0f, 6.0f, 3.0f});
+
+    std::cout << "Equal: " << notlab::isVectorEqual(first, second) << std::endl;
+
+    notlab::MatrixI zeros = notlab::MatrixI::zeros(3, 2, "first");
 
     std::cout << zeros.toString() << std::endl;
     std::cout << zeros(3,1) << std::endl;
+
+    notlab::MatrixI identity = notlab::MatrixI::identity(3, "second");
+
+    identity(2,2) = 3;
+
+    identity.printAll();
+
+    identity.addRow({1,3,4});
+
+    identity.printAll();
+
+    identity.addColumn({5,7,9,0});
+
+    identity.printAll();
+
+    identity.addColumn(first);
+
+    identity.printAll();
+
+    notlab::MatrixI secondMatrix = notlab::MatrixI::zeros(4, 2, "to Add");
+    secondMatrix.printAll();
+
+    identity.addColumn(secondMatrix);
+
+    identity.printAll();
 
     return 0;
 }
