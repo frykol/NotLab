@@ -87,6 +87,21 @@ namespace notlab
             }
 
             /**
+             * @brief Append another vector subset to the back.
+             * 
+             * @param vector Other vector to append
+             * @param from First index in subset
+             * @param to Last index in subset
+             */
+            void addBack(const Vector<T>& vector, size_t from, size_t to){
+                m_data.insert(m_data.begin(), vector.getData().begin() + from,vector.getData().begin() + to);
+            }
+
+            void addBack(const std::vector<T>& vector, size_t from, size_t to){
+                m_data.insert(m_data.begin(), vector.begin() + from,vector.begin() + to);
+            }
+
+            /**
              * @brief Add an element to the front of the vector.
              * @param element Value to prepend.
              */
@@ -100,6 +115,10 @@ namespace notlab
              */
             void addFront(const Vector<T>& vector){
                 m_data.insert(m_data.begin(), vector.m_data.begin(), vector.m_data.end());
+            }
+
+            void addFront(const Vector<T>& vector, size_t from, size_t to){
+                m_data.insert(m_data.end(), vector.m_data.begin() + from, vector.m_data.begin() + to);
             }
 
             /**
@@ -128,15 +147,15 @@ namespace notlab
 
             /**
              * @brief Access the i-th element (read/write).
-             * @param i Index (starting from 0).
+             * @param i Index (starting from 1).
              * @throws std::runtime_error if index is out of bounds.
              * @return Reference to the element.
              */
             T& operator()(size_t i){
-                if (i >= m_data.size()){
+                if (i > m_data.size() || i<1){
                     throw std::runtime_error("Index out of bounds");
                 }
-                return m_data[i];
+                return m_data[i - 1];
             }
 
             /**
@@ -221,7 +240,7 @@ namespace notlab
      * @return Vector of the elementwise subtraction.
      */
     template<typename T, typename U>
-    auto operator+(const Vector<T>& left, const Vector<U>& right) {return elementwise(left, right, std::minus<>());}
+    auto operator-(const Vector<T>& left, const Vector<U>& right) {return elementwise(left, right, std::minus<>());}
 
     /**
      * @brief Multiplies a vector by a scalar (vector * scalar).

@@ -1,6 +1,8 @@
 #include <iostream>
 #include "vector.h"
 #include "matrix.h"
+#include "lu_decomposition.h"
+#include "inverse.h"
 
 int main(void){
     // notlab::VectorI test = notlab::VectorI::fromList({1,3,4,24});
@@ -64,6 +66,20 @@ int main(void){
     identity.addColumn(secondMatrix);
 
     identity.printAll();
+
+    notlab::MatrixI testMatrix = notlab::MatrixI::fromList({{2,3,1},{4,7,5},{6,18,19}});
+
+    notlab::VectorI tVector = testMatrix.getColumn(2);
+    std::cout << tVector.toString() << std::endl;
+
+    testMatrix.printAll();
+
+    auto LU = notlab::gaussDollitle(testMatrix);
+
+    LU.first.printAll();
+    LU.second.printAll();
+
+    notlab::inverseByLu(testMatrix);
 
     return 0;
 }

@@ -1,3 +1,5 @@
+#pragma once
+
 #include <vector>
 #include <string>
 #include <sstream>
@@ -47,6 +49,29 @@ namespace notlab{
             }
 
             /**
+             * @brief Creates an empty matrix
+             * 
+             * @param name Specifies name of Matrix
+             * @return Matrix<T> Empty matrix
+             */
+            static Matrix<T> empty(const std::string& name){
+                return Matrix<T>(0,0,name);
+            }
+
+            static Matrix<T> fromList(std::initializer_list<std::initializer_list<T>> rowsList, const std::string& name = "unnamed"){
+                size_t numberOfRows = rowsList.size();
+                size_t numberOfColumns = rowsList.begin()->size();
+                Matrix<T> matrixFromList = Matrix<T>::empty(name);
+                for(const auto& row : rowsList){
+                    if (row.size() != numberOfColumns){
+                        throw std::runtime_error("Inconsistent row size");
+                    }
+                    matrixFromList.addRow(row);
+                }
+                return matrixFromList;
+            }
+
+            /**
              * @brief Creates an identity matrix (square) of given size.
              * @param size Number of rows and columns (matrix is square).
              * @param name Specifies name of Matrix.
@@ -66,12 +91,16 @@ namespace notlab{
              * @param row List of elements that is added to row.
              */
             void addRow(std::initializer_list<T> row){
-                TRACK_INSTRUCTION();
-                if(row.size() != m_numOfCols){
+                
+                if((row.size() != m_numOfCols) && m_numOfCols != 0 && m_numOfRows != 0){
                     throw std::runtime_error("Length of columns dont match up");
                 }
+                TRACK_INSTRUCTION();
                 m_data.insert(m_data.end(), row.begin(), row.end());
                 m_numOfRows++;
+                if(m_numOfCols == 0){
+                    m_numOfCols = row.size();
+                }
                 
             }
 
@@ -81,12 +110,16 @@ namespace notlab{
              * @param row Vector of elements that is added to row.
              */
             void addRow(const Vector<T>& row){
-                TRACK_INSTRUCTION();
-                if(row.getSize() != m_numOfCols){
+                
+                if((row.getSize() != m_numOfCols) && m_numOfCols != 0 && m_numOfRows != 0){
                     throw std::runtime_error("Length of columns dont match up");
                 }
+                TRACK_INSTRUCTION();
                 m_data.insert(m_data.end(), row.getData().begin(), row.getData().end());
                 m_numOfRows++;
+                if(m_numOfCols == 0){
+                    m_numOfCols = row.getSize();
+                }
             }
 
             /**
@@ -104,16 +137,38 @@ namespace notlab{
             }
 
             /**
+             * @brief Get the row of Matrix
+             * 
+             * @param row index of row
+             * @return Vector<T> Vector of row
+             */
+            Vector<T> getRow(size_t row){
+                if(row < 1 || row > m_numOfRows){
+                    throw std::runtime_error("Row out of bounds");
+                }
+
+                Vector<T> rowVector = Vector<T>::zeros(0);
+                size_t firstElement = toIndex(row, 1);
+                rowVector.addBack(m_data, firstElement, firstElement+m_numOfCols);
+                return rowVector;
+            }
+
+            /**
              * @brief Adds column to Matrix.
              * 
              * @param col List of elements that is added to column.
              */
             void addColumn(std::initializer_list<T> col){
-                if(col.size() != m_numOfRows){
-                    throw std::runtime_error("Lnegth of rows dont match up");
+                if((col.size() != m_numOfRows) && m_numOfCols != 0 && m_numOfRows != 0){
+                    throw std::runtime_error("Length of rows dont match up");
                 }
                 TRACK_INSTRUCTION();
                 auto colIt = col.begin();
+
+                if(m_numOfRows == 0){
+                    m_data.reserve(col.size());
+                    m_numOfRows = col.size();
+                }
 
                 for(size_t row = m_numOfRows; row-->0;){
                     size_t insertIndex = (row + 1) * m_numOfCols;
@@ -128,11 +183,16 @@ namespace notlab{
              * @param col Vector of elements that is added to column;
              */
             void addColumn(const Vector<T>& col){
-                if(col.getSize() != m_numOfRows){
-                    throw std::runtime_error("Lnegth of rows dont match up");
+                if((col.getSize() != m_numOfRows) && m_numOfCols != 0 && m_numOfRows != 0){
+                    throw std::runtime_error("Length of rows dont match up");
                 }
                 TRACK_INSTRUCTION();
                 auto colIt = col.getData().begin();
+
+                if(m_numOfRows == 0){
+                    m_data.reserve(col.getSize());
+                    m_numOfRows = col.getSize();
+                }
 
                 for(size_t row = m_numOfRows; row-->0;){
                     size_t insertIndex = (row + 1) * m_numOfCols;
@@ -148,7 +208,7 @@ namespace notlab{
              */
             void addColumn(const Matrix<T>& col){
                 if(col.getNumberOfRows() != m_numOfRows){
-                    throw std::runtime_error("Lnegth of rows dont match up");
+                    throw std::runtime_error("Length of rows dont match up");
                 }
                 TRACK_INSTRUCTION();
                 m_data.reserve(m_data.size() + m_numOfRows * col.getNumberOfColums());
@@ -163,6 +223,17 @@ namespace notlab{
                 m_numOfCols += col.getNumberOfColums();
             }
 
+            Vector<T> getColumn(size_t column){
+                if(column > m_numOfCols || column < 1){
+                    throw std::runtime_error("column out of bounds");
+                }
+                Vector<T> columnVector = Vector<T>::zeros(m_numOfRows);
+
+                for(size_t i=1; i<=m_numOfRows; i++){
+                    columnVector(i) = m_data[toIndex(i, column)];
+                }
+                return columnVector;
+            }
             
             /**
              * @brief Converts (row, col) to internal 1D index.
@@ -200,6 +271,16 @@ namespace notlab{
              */
             size_t getNumberOfRows() const{
                 return m_numOfRows;
+            }
+
+            /**
+             * @brief Checking if matrix is square
+             * 
+             * @return true if is square
+             * @return false if is not square
+             */
+            bool isSqure() const{
+                return m_numOfCols == m_numOfRows;
             }
 
             /**

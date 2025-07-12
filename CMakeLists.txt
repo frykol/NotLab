@@ -7,7 +7,8 @@ project(NotLab)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_subdirectory(core)
+include_directories(${CMAKE_SOURCE_DIR}/core)
+include_directories(${CMAKE_SOURCE_DIR}/algorithms)
 
 add_executable(NotLab src/main.cpp)
-target_link_libraries(NotLab core)
+
