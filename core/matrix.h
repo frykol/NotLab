@@ -334,8 +334,31 @@ namespace notlab{
                 std::cout << "-----" << std::endl;
             }
 
+            /**
+             * @brief Set the last instruction performed on matrix
+             * 
+             * @param operation name of instruction
+             */
             void setInstruction(const std::string& operation){
                 m_lastInstruction = operation;
+            }
+
+            /**
+             * @brief Set the name of matrix
+             * 
+             * @param name 
+             */
+            void setName(const std::string& name){
+                m_name = name;
+            }
+
+            /**
+             * @brief Get the name of matrix
+             * 
+             * @return std::string 
+             */
+            std::string getName() const{
+                return m_name;
             }
 
             /**
@@ -367,4 +390,101 @@ namespace notlab{
 
     using MatrixI = Matrix<int>;
     using MatrixF = Matrix<float>;
+
+
+    template<typename T, typename U, typename Op>
+    auto elementwise(const Matrix<T>& left, const Matrix<U>& right, Op operation){
+        if((left.getNumberOfRows() != right.getNumberOfRows()) || (left.getNumberOfColums() != right.getNumberOfColums())){
+            throw std::runtime_error("Numbers of columns or rows don't match up");
+        }
+
+        using resultType = decltype(operation(T(), U()));
+        Matrix<resultType> resultMatrix = Matrix<resultType>::zeros(left.getNumberOfRows(), left.getNumberOfColums());
+        for(size_t row = 1; row<=left.getNumberOfRows(); row++){
+            for(size_t column = 1; column<=left.getNumberOfColums(); column++){
+                resultMatrix(row, column) = operation(static_cast<resultType>(left(row,column)),static_cast<resultType>(right(row,column)));
+            }
+        }
+        return resultMatrix;
+    }
+
+    template<typename T, typename U>
+    auto operator+(const Matrix<T>& left, const Matrix<U>& right){ 
+        auto matrix = elementwise(left, right, std::plus<>());
+        matrix.setName(left.getName() + "+" + right.getName());
+        matrix.setInstruction("Addition");
+        return matrix;
+    }
+
+    template<typename T, typename U>
+    auto operator-(const Matrix<T>& left, const Matrix<U>& right){
+        auto matrix = elementwise(left, right, std::minus<>());
+        matrix.setName(left.getName() + "-" + right.getName());
+        matrix.setInstruction("Subtraction");
+        return matrix;
+    }
+
+    template<typename T, typename U>
+    auto operator*(const Matrix<T>& left, const Matrix<U>& right){
+        if(left.getNumberOfColums() != right.getNumberOfRows()){
+            throw std::runtime_error("Number of columns and rows dont match up");
+        }
+
+        using resultType = decltype(T() * U());
+        Matrix<resultType> resultMatix = Matrix<resultType>::zeros(left.getNumberOfRows(), right.getNumberOfColums(), left.getName() + "*" + right.getName());
+        resultMatix.setInstruction("Multiplication");
+        
+        for(size_t row = 1; row <= left.getNumberOfRows(); row++){
+            for(size_t column = 1; column <= right.getNumberOfColums(); column++){
+                resultType value = 0;
+                for(size_t k = 1; k<=left.getNumberOfColums(); k++){
+                    value += left(row,k) * right(k, column);
+                }
+                resultMatix(row, column) = value;
+            }
+        }
+        return resultMatix;
+    }
+
+    template<typename T, typename U>
+    auto operator*(const Matrix<T>& left, const U& scalar){
+        using resultType = decltype(T() * U());
+        Matrix<resultType> resultMatrix = Matrix<resultType>::zeros(left.getNumberOfRows(),left.getNumberOfColums(),left.getName());
+        for(size_t row = 1; row<=left.getNumberOfRows(); row++){
+            for(size_t column = 1; column<=left.getNumberOfColums(); column++){
+                resultMatrix(row, column) = left(row, column) * scalar;
+            }
+        }
+        resultMatrix.setInstruction("Multiplication");
+        return resultMatrix;
+    }
+
+    template<typename T, typename U>
+    auto operator*(const T& scalar, const Matrix<U>& left){
+        return left * scalar;
+    }
+
+    template<typename T, typename U>
+    auto operator/(const Matrix<T>& left, const Matrix<U>& right){
+        if(left.getNumberOfColums() != right.getNumberOfRows()){
+            throw std::runtime_error("Number of columns and rows dont match up");
+        }
+
+
+        auto rightInverse = inverseByLu(right); 
+        using resultType = decltype(T() * float());
+        Matrix<resultType> resultMatix = Matrix<resultType>::zeros(left.getNumberOfRows(), right.getNumberOfColums(), left.getName() + "/" + right.getName());
+        resultMatix.setInstruction("Division");
+               
+        for(size_t row = 1; row <= left.getNumberOfRows(); row++){
+            for(size_t column = 1; column <= right.getNumberOfColums(); column++){
+                resultType value = 0;
+                for(size_t k = 1; k<=left.getNumberOfColums(); k++){
+                    value += left(row,k) * rightInverse(k, column);
+                }
+                resultMatix(row, column) = value;
+            }
+        }
+        return resultMatix;
+    }
 }

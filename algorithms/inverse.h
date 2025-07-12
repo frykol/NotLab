@@ -5,10 +5,18 @@
 
 namespace notlab{
 
+
+    /**
+     * @brief Inverse matrix using LU decomposition
+     * 
+     * @tparam T Type of matrix that is inversed
+     * @param matrixToInverse matrix that is inverted
+     * @return MatrixF inverted matrix
+     */
     template<typename T>
     MatrixF inverseByLu(const Matrix<T>& matrixToInverse){
         if(!matrixToInverse.isSqure()){
-            throw std::runtime_error("Matrix must be square to decompose");
+            throw std::runtime_error("Matrix must be square to inverse");
         }
 
         int dimentionOfMatrix = matrixToInverse.getNumberOfColums();
@@ -46,8 +54,6 @@ namespace notlab{
 
             
         }
-        xMatrix.printAll();
-
 
         return xMatrix;
     }
