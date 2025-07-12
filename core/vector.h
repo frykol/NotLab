@@ -160,15 +160,15 @@ namespace notlab
 
             /**
              * @brief Access the i-th element (read-only).
-             * @param i Index (starting from 0).
+             * @param i Index (starting from 1).
              * @throws std::runtime_error if index is out of bounds.
              * @return Const reference to the element.
              */
             const T& operator()(size_t i) const{
-                if (i >= m_data.size()){
+                if (i > m_data.size() || i<1){
                     throw std::runtime_error("Index out of bounds");
                 }
-                return m_data[i];
+                return m_data[i - 1];
             }
 
             /**

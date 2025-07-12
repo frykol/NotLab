@@ -9,6 +9,22 @@
 #define TRACK_INSTRUCTION() setInstruction(__func__);
 
 namespace notlab{
+
+    /**
+     * @struct is_matrix_type_valid
+     * @brief Type trait to restrict allowed types for Matrix.
+     * @tparam T Type to check.
+     */
+    template<typename T>
+    struct is_matrix_type_valid : std::false_type{};
+
+    /// Specialization: int is allowed.
+    template<> struct is_matrix_type_valid<int>: std::true_type{};
+    /// Specialization: float is allowed.
+    template<> struct is_matrix_type_valid<float>: std::true_type{};
+    /// Specialization: double is allowed.
+    template<> struct is_matrix_type_valid<double>: std::true_type{};
+
     /**
      * @class Matrix
      * @tparam T Element type (e.g. int, float, double)
@@ -19,6 +35,7 @@ namespace notlab{
      */
     template<typename T>
     class Matrix{
+        static_assert(is_matrix_type_valid<T>::value, "This type is not valid");
         private:
             // m(3,1) -> 3row, 1col
             size_t m_numOfRows;
@@ -54,7 +71,7 @@ namespace notlab{
              * @param name Specifies name of Matrix
              * @return Matrix<T> Empty matrix
              */
-            static Matrix<T> empty(const std::string& name){
+            static Matrix<T> empty(const std::string& name = "unnamed"){
                 return Matrix<T>(0,0,name);
             }
 
@@ -72,6 +89,30 @@ namespace notlab{
             }
 
             /**
+             * @brief Converts Vector to Matrix
+             * 
+             * @param vectorToMatrix Vector that is converted to Matrix
+             * @param rows Number of rows
+             * @param cols Number of columns
+             * @return Matrix<T> Matrix constructed from Vector
+             */
+            static Matrix<T> fromVector(const Vector<T>& vectorToMatrix, size_t rows, size_t cols){
+                if(rows * cols != vectorToMatrix.getSize()){
+                    throw std::runtime_error("Dimentions of Matrix don't match with number of elements in vector");
+                }
+                Matrix<T> matrix = zeros(rows, cols);
+                size_t index = 1;
+                for(size_t row = 1; row <= rows; row++){
+                    for(size_t col = 1; col <= cols; col++){
+                        matrix(row,col) = vectorToMatrix(index);
+                        index++;
+                    }
+                }
+                return matrix;
+
+            }
+
+            /**
              * @brief Creates an identity matrix (square) of given size.
              * @param size Number of rows and columns (matrix is square).
              * @param name Specifies name of Matrix.
@@ -84,6 +125,51 @@ namespace notlab{
                 }
 
                 return ide;
+            }
+
+            /**
+             * @brief Transposing given matrix.
+             * 
+             * @param matrixToTranspose Matrix to transpose.
+             * @return Matrix<T> Transposed Matrix.
+             */
+            static Matrix<T> transpose(const Matrix<T>& matrixToTranspose){
+                Matrix<T> transposedMatrix = zeros(matrixToTranspose.getNumberOfColums(), matrixToTranspose.getNumberOfRows(), matrixToTranspose.getName() + "^T");
+                transposedMatrix.setInstruction("transpose");
+                for (size_t row = 1; row <= matrixToTranspose.getNumberOfRows(); row++) {
+                    for (size_t column = 1; column <= matrixToTranspose.getNumberOfColums(); column++) {
+                        transposedMatrix(column, row) = matrixToTranspose(row, column);
+                    }
+                }
+                return transposedMatrix;
+            }   
+
+            /**
+             * @brief transpose Matrix
+             * 
+             */
+            void transpose(){
+                TRACK_INSTRUCTION();
+                std::vector<T> newData(m_numOfRows * m_numOfCols);
+                for(size_t row = 1; row <= m_numOfRows; row++){
+                    for(size_t column = 1; column <= m_numOfCols; column++){
+                        newData[(column-1) * m_numOfRows + (row-1)] = m_data[(row-1) * m_numOfCols + (column-1)];
+                    }
+                    
+                }
+                std::swap(m_numOfRows, m_numOfCols);
+                m_data = std::move(newData);
+            }
+
+            /**
+             * @brief Converts Matrix to flat vector
+             * 
+             * @return Vector<T> flat Matrix
+             */
+            Vector<T> toVector(){
+                Vector<T> matrixToVector = Vector<T>::zeros(0);
+                matrixToVector.addBack(m_data, 0, getNumberOfElements());
+                return matrixToVector;
             }
 
             /**
@@ -233,6 +319,36 @@ namespace notlab{
                     columnVector(i) = m_data[toIndex(i, column)];
                 }
                 return columnVector;
+            }
+
+            /**
+             * @brief Calculates minor Matrix.
+             * 
+             * @param omitRow Rows that must be omited.
+             * @param omitColumn Columns that must be omited.
+             * @return Matrix<T> Minor matrix.
+             */
+            Matrix<T> minorMatrix(size_t omitRow, size_t omitColumn) const{
+                if(getNumberOfElements() == 0){
+                    throw std::runtime_error("Can't calculate minor for empty matrix");
+                }
+                if(omitRow <= 0 || omitRow > m_numOfRows || omitColumn <= 0 || omitColumn > m_numOfCols){
+                    throw std::runtime_error("Index out of bound when calculation matrix minor");
+                }
+                Matrix<T> minor = Matrix<T>::empty();
+                for(size_t row = 1; row <= m_numOfRows; row++){
+                    Vector<T> rowVector = Vector<T>::zeros(0);
+                    for(size_t column = 1; column <= m_numOfCols; column++){
+                        if(row == omitRow || column == omitColumn){
+                            continue;
+                        }
+                        rowVector.addBack(m_data[toIndex(row,column)]);
+                    }
+                    if(rowVector.getSize() != 0){
+                        minor.addRow(rowVector);
+                    }
+                }
+                return minor;
             }
             
             /**
