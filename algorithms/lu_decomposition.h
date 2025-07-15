@@ -1,6 +1,6 @@
 #pragma once
 
-#include "matrix.h"
+#include "../core/matrix.h"
 
 namespace notlab
 {

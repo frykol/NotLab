@@ -1,9 +1,16 @@
 #pragma once
 
-#include "matrix.h"
+#include "../core/matrix.h"
 
 namespace notlab
-{
+{   
+    /**
+     * @brief Calculates determinant by Laplace method.
+     * 
+     * @tparam T Type of Matrix.
+     * @param matrix Matrix to calculate determinant.
+     * @return float Determinant.
+     */
     template<typename T>
     float determinantByLaplace(const Matrix<T>& matrix){
         if(!matrix.isSqure()){

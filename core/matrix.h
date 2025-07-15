@@ -228,7 +228,7 @@ namespace notlab{
              * @param row index of row
              * @return Vector<T> Vector of row
              */
-            Vector<T> getRow(size_t row){
+            Vector<T> getRow(size_t row) const{
                 if(row < 1 || row > m_numOfRows){
                     throw std::runtime_error("Row out of bounds");
                 }
@@ -309,7 +309,7 @@ namespace notlab{
                 m_numOfCols += col.getNumberOfColums();
             }
 
-            Vector<T> getColumn(size_t column){
+            Vector<T> getColumn(size_t column) const{
                 if(column > m_numOfCols || column < 1){
                     throw std::runtime_error("column out of bounds");
                 }
@@ -364,6 +364,7 @@ namespace notlab{
                 }
                 return (row-1) * m_numOfCols + (col-1);
             }
+
 
             /**
              * @brief Returns the number of stored elements.
@@ -431,7 +432,7 @@ namespace notlab{
              * @brief Prints basic Matrix information.
              * 
              */
-            void print(){
+            void print() const{
                 std::cout << "-----" << std::endl;
                 std::cout << "Matrix: " << m_name << std::endl;
                 std::cout << toString() << std::endl;
@@ -442,7 +443,7 @@ namespace notlab{
              * @brief Prints all of Marix information.
              * 
              */
-            void printAll(){
+            void printAll() const{
                 std::cout << "-----" << std::endl;
                 std::cout << "Matrix name: " << m_name << ", Dimension: " << m_numOfRows << "x" << m_numOfCols << std::endl;
                 std::cout << "Last operation performed on Matrix: " << m_lastInstruction << std::endl;
@@ -602,5 +603,55 @@ namespace notlab{
             }
         }
         return resultMatix;
+    }
+
+    /**
+     * @brief Checks if two Matrieses are equal.
+     * 
+     * @tparam T Type of first matrix.
+     * @tparam U Type of second matrix.
+     * @param first First matrix.
+     * @param second Second Matrix.
+     * @return true If Matrieses are equal.
+     * @return false If Matrieses are not equal.
+     */
+    template<typename T, typename U>
+    bool isMatrixEqual(const Matrix<T>& first, const Matrix<U>& second){
+        if((first.getNumberOfColums() != second.getNumberOfColums()) || (first.getNumberOfRows() != second.getNumberOfRows())){
+            return false;
+        }
+
+        if(first.getNumberOfElements() == 0){
+            return true;
+        }
+
+        for(size_t row = 1; row <= first.getNumberOfRows(); row++){
+            for(size_t col = 1; col <= first.getNumberOfColums(); col++){
+                if(first(row,col) != second(row, col)){
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @brief Cast matrix to different type.
+     * 
+     * @tparam T Original type.
+     * @tparam U Type to cast.
+     * @param matrix Matrix to cast.
+     * @return Matrix<U> Casted Matrix.
+     */
+    template<typename U, typename T>
+    Matrix<U> castMatrix(const Matrix<T>& matrix){
+        Matrix<U> matrixToReturn = Matrix<U>::zeros(matrix.getNumberOfRows(), matrix.getNumberOfColums());
+        for(size_t row = 1; row <= matrix.getNumberOfRows(); row++){
+            for(size_t column = 1; column <= matrix.getNumberOfColums(); column++){
+                matrixToReturn(row,column) = static_cast<U>(matrix(row, column));
+            }
+        }
+        return matrixToReturn;
     }
 }

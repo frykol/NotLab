@@ -1,7 +1,8 @@
 #pragma once
-#include "matrix.h"
-#include "vector.h"
+#include "../core/matrix.h"
+#include "../core/vector.h"
 #include "lu_decomposition.h"
+#include "substitution.h"
 
 namespace notlab{
 
@@ -25,36 +26,39 @@ namespace notlab{
         MatrixF identity = MatrixF::identity(dimentionOfMatrix);
         std::pair<MatrixF, MatrixF> luMatrix = gaussDollitle(matrixToInverse);
 
-        MatrixF xMatrix = MatrixF::empty("inverseMatrix");
+        MatrixF xMatrix = MatrixF::empty(matrixToInverse.getName() + "^-1");
 
         for(size_t k = 1; k<=dimentionOfMatrix; k++){
 
-            VectorF y = VectorF::zeros(dimentionOfMatrix);
+            //VectorF y = VectorF::zeros(dimentionOfMatrix);
             VectorF identityColumn = identity.getColumn(k);
 
-            for(size_t i = 1; i<=dimentionOfMatrix; i++){
-                float value = 0;
-                for(size_t j = 1; j < i; j++){
-                    value += luMatrix.first(i,j) * y(j);
-                }
-                y(i) = (identityColumn(i) - value) / luMatrix.first(i,i);
-            }
+            // for(size_t i = 1; i<=dimentionOfMatrix; i++){
+            //     float value = 0;
+            //     for(size_t j = 1; j < i; j++){
+            //         value += luMatrix.first(i,j) * y(j);
+            //     }
+            //     y(i) = (identityColumn(i) - value) / luMatrix.first(i,i);
+            // }
+            VectorF y = forwardSubstitution(luMatrix.first, identityColumn);
 
-            VectorF x = VectorF::zeros(dimentionOfMatrix);
+            // VectorF x = VectorF::zeros(dimentionOfMatrix);
 
-            for(size_t i = dimentionOfMatrix; i>=1; i--){
-                float value = 0;
-                for(size_t j = dimentionOfMatrix; j>i; j--){
-                    value += luMatrix.second(i,j) * x(j);
-                }
-                x(i) = (y(i) - value)/luMatrix.second(i,i);
-            }
+            // for(size_t i = dimentionOfMatrix; i>=1; i--){
+            //     float value = 0;
+            //     for(size_t j = dimentionOfMatrix; j>i; j--){
+            //         value += luMatrix.second(i,j) * x(j);
+            //     }
+            //     x(i) = (y(i) - value)/luMatrix.second(i,i);
+            // }
+
+            VectorF x = backwardSubstitution(luMatrix.second, y);
 
             xMatrix.addColumn(x);
 
             
         }
-
+        xMatrix.setInstruction("Inverse");
         return xMatrix;
     }
 

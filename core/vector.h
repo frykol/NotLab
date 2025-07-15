@@ -312,4 +312,21 @@ namespace notlab
         return true;
     }
 
+    /**
+     * @brief Cast Vector to different type.
+     * 
+     * @tparam T Original type.
+     * @tparam U Type to cast.
+     * @param vector Vector to cast.
+     * @return Vector<U> Casted Vector.
+     */
+    template<typename U, typename T>
+    Vector<U> castVector(const Vector<T>& vector){
+        Vector<U> vectorToReturn = Vector<U>::zeros(vector.getSize());
+        for(size_t i = 1; i<= vector.getSize(); i++){
+            vectorToReturn(i) = static_cast<U>(vector(i));
+        }
+        return vectorToReturn;
+    }
+
 } // namespace notlab
