@@ -6,6 +6,8 @@
 #include "determinant.h"
 #include "linear_solve.h"
 
+#include "parser.h"
+
 int main(void){
     notlab::MatrixF first = notlab::MatrixF::fromList({{1,2,3},{3,2,2},{1,6,12}}, "MacierzA");
     notlab::MatrixF second = notlab::MatrixF::fromList({{1,1,1},{6,12,1},{5,6,1}}, "MacierzB");
@@ -55,20 +57,25 @@ int main(void){
     notlab::MatrixF inverse = notlab::inverseByLu(testMinorMatrix);
     inverse.printAll();
 
-    notlab::MatrixF testMTV = notlab::MatrixF::fromList({{1},{5},{2}});
-
-    testMTV.printAll();
-
-    notlab::VectorF converted = testMTV.getColumn(1);
-
-    std::cout << converted.toString() << std::endl;
-
     notlab::MatrixI matrixA = notlab::MatrixI::fromList({{1,1,1}, {2,3,7}, {2,5,9}});
     notlab::MatrixI vectorb = notlab::MatrixI::fromList({{6},{28},{36}});
 
-    notlab::VectorF vectorx = notlab::solveByLu(matrixA, vectorb);
+    notlab::VectorF vectorx = notlab::linearSolveByLu(matrixA, vectorb);
+
+    matrixA.printAll();
+    vectorb.printAll();
 
     std::cout << vectorx.toString() << std::endl;
+
+    notlab::MatrixI testmacierz = notlab::MatrixI::fromList({{1,2},{3,2},{5,6}});
+
+    testmacierz.printAll();
+
+    testmacierz.transpose();
+    testmacierz.printAll();
+
+    std::string testString = "x1 + 3*-3 + 5";
+    notlab::tokenize(testString);
 
     return 0;
 }

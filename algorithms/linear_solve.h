@@ -17,7 +17,7 @@ namespace notlab
      * @return VectorF X Vector.
      */
     template<typename T, typename U>
-    VectorF solveByLu(const Matrix<T>& A, const Vector<U>& b){
+    VectorF linearSolveByLu(const Matrix<T>& A, const Vector<U>& b){
         if(!A.isSqure()){
             throw std::runtime_error("Matrix A must be square in order to solve equation");
         }
@@ -46,7 +46,7 @@ namespace notlab
      * @return VectorF X vector.
      */
     template<typename T, typename U>
-    VectorF solveByLu(const Matrix<T>& A, const Matrix<U>& b){
+    VectorF linearSolveByLu(const Matrix<T>& A, const Matrix<U>& b){
         if(!A.isSqure()){
             throw std::runtime_error("Matrix A must be square in order to solve equation");
         }
@@ -54,7 +54,7 @@ namespace notlab
             throw std::runtime_error("Matrix A must have one column to solve equation");
         }
         Vector<U> bVector = b.getColumn(1);
-        return solveByLu(A, bVector);
+        return linearSolveByLu(A, bVector);
     }
 
 
