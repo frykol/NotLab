@@ -1,139 +1,134 @@
 #pragma once
 
+#include <memory>
 #include <vector>
-#include <string>
-
-#include <iostream>
-
-#define OFFSET_TO_ELEMENT_BEFORE 2
+#include "ast.h"
+#include "tokenizer.h"
 
 namespace notlab{
-    
-    enum class TokenType{
-        None = 0, Number, Variable, Operator, LeftParentheses, RightParentheses, UnaryMinus
-    };
 
-    struct Token{
-        TokenType type;
-        std::string tokenContent;
-    };
-
-    bool isUnaryMinusAllowed(const std::vector<Token>& tokens) {
-    
-        if (tokens.empty()) return true;
-        TokenType prev = tokens.back().type;
-        return prev == TokenType::Operator || prev == TokenType::LeftParentheses;
-    }  
-
-
-    /**
-     * @brief Tokenizing equation string
-     * 
-     * @param equation String representing mathematical equation
-     * @return std::vector<Token> Vector of Tokens.
-     */
-    std::vector<Token> tokenize(const std::string& equation){
-        std::vector<Token> tokens;
-
-        int levelOfParentheses = 0;
-
-        size_t i = 0;
-
-
-        while(i < equation.size()){
-            if(std::isspace(equation[i])){
-                i++;
-                continue;
-            }
-
-            if(std::isdigit(equation[i])){
-
-                size_t digitStartPosition = i;
-
-                while(i < equation.size() && (std::isdigit(equation[i]) || equation[i] == '.')){
-                    i++;
-                }
-                tokens.push_back({TokenType::Number, equation.substr(digitStartPosition, i-digitStartPosition)});
-
-                if(tokens.size() > OFFSET_TO_ELEMENT_BEFORE 
-                && tokens[tokens.size() - OFFSET_TO_ELEMENT_BEFORE].type != TokenType::Operator
-                && tokens[tokens.size() - OFFSET_TO_ELEMENT_BEFORE].type != TokenType::UnaryMinus
-                &&  tokens[tokens.size() - OFFSET_TO_ELEMENT_BEFORE].type != TokenType::LeftParentheses){
-                    throw std::runtime_error(std::string("Illegal character before number: ") + equation[i]);
-                }
-
-            }
-
-            else if(std::isalpha(equation[i])){
-
-                size_t variableStartPosition = i;
-
-                while(i < equation.size() && (std::isalpha(equation[i]) || std::isdigit(equation[i]))){
-                    i++;
-                }
-                tokens.push_back({TokenType::Variable, equation.substr(variableStartPosition, i - variableStartPosition)});
-
-            }
-
-            else if(equation[i] == '+' ||  equation[i] == '*' || equation[i] == '/'){
-                tokens.push_back({TokenType::Operator, std::string(1, equation[i])});
-
-
-                if((tokens.size() < OFFSET_TO_ELEMENT_BEFORE )
-                    ||( tokens.size() >= OFFSET_TO_ELEMENT_BEFORE 
-                    && tokens[tokens.size() - OFFSET_TO_ELEMENT_BEFORE].type != TokenType::Number
-                    && tokens[tokens.size() - OFFSET_TO_ELEMENT_BEFORE].type != TokenType::RightParentheses
-                    && tokens[tokens.size() - OFFSET_TO_ELEMENT_BEFORE].type != TokenType::Variable)){
-                        throw std::runtime_error(std::string("Illegal character before operator: ") + equation[i]);
-                }
-
-                i++;
-            }
-
-            else if(equation[i] == '-'){
-                if(isUnaryMinusAllowed(tokens)){
-                    tokens.push_back({TokenType::UnaryMinus, "-"});
-                }
-                else{
-                    tokens.push_back({TokenType::Operator, "-"});
-                }
-                i++;
-            }
-
-            else if (equation[i] == '('){
-                tokens.push_back({TokenType::LeftParentheses, "("});
-
-                levelOfParentheses++;
-
-
-                i++;
-            }
-
-            else if (equation[i] == ')'){
-                tokens.push_back({TokenType::RightParentheses, ")"});
-
-                levelOfParentheses--;
-                if(levelOfParentheses < 0){
-                    throw std::runtime_error("Number of right paranthesies is greater than left");
-                }
-                i++;
-            }
-
-            else{
-                throw std::runtime_error(std::string("Unknow character: ") + equation[i]);
-            }
-
+    int getOperatorPrecedence(const Token& operatorToken){
+        if(operatorToken.tokenContent == "^"){
+            return 4;
         }
-
-        if(levelOfParentheses > 0 ){
-            throw std::runtime_error("Number of left paranthesies is greater than right");
+        if(operatorToken.type == TokenType::UnaryMinus){
+            return 3;
         }
-
-        for(size_t i = 0; i<tokens.size(); i++){
-            std::cout << tokens[i].tokenContent << std::endl;
+        else if(operatorToken.tokenContent == "*" || operatorToken.tokenContent == "/"){
+            return 2;
         }
-
-        return tokens;
+        if(operatorToken.tokenContent == "+" || operatorToken.tokenContent == "-"){
+            return 1;
+        }
+        return 0;
     }
 
-} // namespace notlab
+    Operator getOperatorFromString(const std::string& op){
+        if(op == "+"){
+            return Operator::Plus;
+        }
+        else if(op == "-"){
+            return Operator::Minus;
+        }
+        else if(op == "*"){
+            return Operator::Multiplies;
+        }
+        else if(op == "/"){
+            return Operator::Divide;
+        }
+        else if(op == "^"){
+            return Operator::Power;
+        }
+        else{
+            throw std::runtime_error("Unknow operator when parsing equation");
+        }
+    }
+
+    std::unique_ptr<Expression> parseTokens(const std::vector<Token>& tokens){
+        std::vector<Token> operatorStack;
+        std::vector<std::unique_ptr<Expression>> operandStack;
+
+        for(size_t i = 0; i<tokens.size(); i++){
+            const Token& token = tokens[i];
+            if(token.type == TokenType::Number){
+                operandStack.push_back(std::make_unique<Constant>(std::stof(token.tokenContent)));
+            }
+            else if(token.type == TokenType::Variable){
+                operandStack.push_back(std::make_unique<Variable>(token.tokenContent));
+            }
+            else if(token.type == TokenType::Operator || token.type == TokenType::UnaryMinus){
+                while(!operatorStack.empty()
+                && getOperatorPrecedence(token) < getOperatorPrecedence(operatorStack.back())){
+
+                    Token op = operatorStack.back();
+                    operatorStack.pop_back();
+
+                    if(op.type == TokenType::UnaryMinus){
+                        auto unaryArgument = std::move(operandStack.back());
+                        operandStack.pop_back();
+                        operandStack.push_back(std::make_unique<UnaryOperator>(Operator::Minus, std::move(unaryArgument)));
+                    }
+                    else{
+                        auto right = std::move(operandStack.back());
+                        operandStack.pop_back();
+                        auto left = std::move(operandStack.back());
+                        operandStack.pop_back();
+                        Operator binaryOp = getOperatorFromString(op.tokenContent);
+                        operandStack.push_back(std::make_unique<BinaryOperator>(binaryOp, std::move(left), std::move(right)));
+                    }
+
+                }
+                operatorStack.push_back(token);
+            }
+            else if(token.type == TokenType::LeftParentheses){
+                operatorStack.push_back(token);
+            }
+            else if(token.type == TokenType::RightParentheses){
+                while(operatorStack.back().type != TokenType::LeftParentheses){
+                    Token op = operatorStack.back();
+                    operatorStack.pop_back();
+
+                    if(op.type == TokenType::UnaryMinus){
+                        auto unaryArgument = std::move(operandStack.back());
+                        operandStack.pop_back();
+                        operandStack.push_back(std::make_unique<UnaryOperator>(Operator::Minus, std::move(unaryArgument)));
+                    }
+                    else{
+                        auto right = std::move(operandStack.back());
+                        operandStack.pop_back();
+                        auto left = std::move(operandStack.back());
+                        operandStack.pop_back();
+                        Operator binaryOp = getOperatorFromString(op.tokenContent);
+                        operandStack.push_back(std::make_unique<BinaryOperator>(binaryOp, std::move(left), std::move(right)));
+                    }
+                }
+                operatorStack.pop_back();
+            }
+        }
+
+        while(!operatorStack.empty()){
+            Token op = operatorStack.back();
+                    operatorStack.pop_back();
+
+                    if(op.type == TokenType::UnaryMinus){
+                        auto unaryArgument = std::move(operandStack.back());
+                        operandStack.pop_back();
+                        operandStack.push_back(std::make_unique<UnaryOperator>(Operator::Minus, std::move(unaryArgument)));
+                    }
+                    else{
+                        auto right = std::move(operandStack.back());
+                        operandStack.pop_back();
+                        auto left = std::move(operandStack.back());
+                        operandStack.pop_back();
+                        Operator binaryOp = getOperatorFromString(op.tokenContent);
+                        operandStack.push_back(std::make_unique<BinaryOperator>(binaryOp, std::move(left), std::move(right)));
+                    }
+        }
+
+
+        if(operandStack.size() != 1){
+            throw std::runtime_error("Operand stack bad size");
+        }
+        return std::move(operandStack.back());
+    }
+}

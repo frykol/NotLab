@@ -309,6 +309,12 @@ namespace notlab{
                 m_numOfCols += col.getNumberOfColums();
             }
 
+            /**
+             * @brief Get the column of Matrix
+             * 
+             * @param column index of column
+             * @return Vector<T> Vector of column 
+             */
             Vector<T> getColumn(size_t column) const{
                 if(column > m_numOfCols || column < 1){
                     throw std::runtime_error("column out of bounds");
