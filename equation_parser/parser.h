@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <memory>
 #include <vector>
 #include "ast.h"
@@ -44,12 +45,43 @@ namespace notlab{
         }
     }
 
+    static void pushToOperand(Token& op, std::vector<Token>& operatorStack, std::vector<std::unique_ptr<Expression>>& operandStack){
+            if(op.type == TokenType::UnaryMinus){
+
+                if(operandStack.empty()){
+                    throw std::runtime_error("Unary Minus: missing operand");
+                }
+
+                auto unaryArgument = std::move(operandStack.back());
+                operandStack.pop_back();
+                operandStack.push_back(std::make_unique<UnaryOperator>(Operator::Minus, std::move(unaryArgument)));
+            }
+            else{
+
+                if(operandStack.size() < 2){
+                    throw std::runtime_error("Binary operator: missing operands");
+                }
+
+                auto right = std::move(operandStack.back());
+                operandStack.pop_back();
+                auto left = std::move(operandStack.back());
+                operandStack.pop_back();
+                Operator binaryOp = getOperatorFromString(op.tokenContent);
+                operandStack.push_back(std::make_unique<BinaryOperator>(binaryOp, std::move(left), std::move(right)));
+            }
+    } 
+
     std::unique_ptr<Expression> parseTokens(const std::vector<Token>& tokens){
         std::vector<Token> operatorStack;
         std::vector<std::unique_ptr<Expression>> operandStack;
+        std::vector<int> functionArgumentsCountStack;
 
         for(size_t i = 0; i<tokens.size(); i++){
+
             const Token& token = tokens[i];
+            const Token* prevToken = (i > 0) ? &tokens[i-1] : nullptr;
+
+            std::cout << token.tokenContent << std::endl;
             if(token.type == TokenType::Number){
                 operandStack.push_back(std::make_unique<Constant>(std::stof(token.tokenContent)));
             }
@@ -57,30 +89,50 @@ namespace notlab{
                 operandStack.push_back(std::make_unique<Variable>(token.tokenContent));
             }
             else if(token.type == TokenType::Operator || token.type == TokenType::UnaryMinus){
-                while(!operatorStack.empty()
-                && getOperatorPrecedence(token) < getOperatorPrecedence(operatorStack.back())){
 
-                    Token op = operatorStack.back();
-                    operatorStack.pop_back();
+                int precendenceOfToken = getOperatorPrecedence(token);
+                bool isRightAssoc = (token.tokenContent == "^");
 
-                    if(op.type == TokenType::UnaryMinus){
-                        auto unaryArgument = std::move(operandStack.back());
-                        operandStack.pop_back();
-                        operandStack.push_back(std::make_unique<UnaryOperator>(Operator::Minus, std::move(unaryArgument)));
+                while(!operatorStack.empty()){
+                    
+                    int precendenceOfTop = getOperatorPrecedence(operatorStack.back());
+
+                    if(precendenceOfToken < precendenceOfTop || (precendenceOfToken == precendenceOfTop && !isRightAssoc)){
+                        Token op = operatorStack.back();
+                        operatorStack.pop_back();
+                    
+                        pushToOperand(op, operatorStack, operandStack);
                     }
                     else{
-                        auto right = std::move(operandStack.back());
-                        operandStack.pop_back();
-                        auto left = std::move(operandStack.back());
-                        operandStack.pop_back();
-                        Operator binaryOp = getOperatorFromString(op.tokenContent);
-                        operandStack.push_back(std::make_unique<BinaryOperator>(binaryOp, std::move(left), std::move(right)));
+                        break;
                     }
-
                 }
                 operatorStack.push_back(token);
             }
-            else if(token.type == TokenType::LeftParentheses){
+            else if(token.type == TokenType::Function){
+                operatorStack.push_back(token);
+            }
+            else if(token.type == TokenType::Comma){
+                if(functionArgumentsCountStack.empty()){
+                    throw std::runtime_error("Invalid use of token ','");
+                }
+
+                while(!operatorStack.empty() && operatorStack.back().type != TokenType::LeftParentheses){
+                    Token op = operatorStack.back();
+                    operatorStack.pop_back();
+
+
+                    pushToOperand(op, operatorStack, operandStack);
+                }
+                if(operatorStack.empty()){
+                    throw std::runtime_error("Comma without maching '('");
+                }
+                functionArgumentsCountStack.back()++;
+            }
+            else if(!operatorStack.empty() && token.type == TokenType::LeftParentheses){
+                if(operatorStack.back().type == TokenType::Function){
+                    functionArgumentsCountStack.push_back(0);
+                }
                 operatorStack.push_back(token);
             }
             else if(token.type == TokenType::RightParentheses){
@@ -88,21 +140,34 @@ namespace notlab{
                     Token op = operatorStack.back();
                     operatorStack.pop_back();
 
-                    if(op.type == TokenType::UnaryMinus){
-                        auto unaryArgument = std::move(operandStack.back());
-                        operandStack.pop_back();
-                        operandStack.push_back(std::make_unique<UnaryOperator>(Operator::Minus, std::move(unaryArgument)));
-                    }
-                    else{
-                        auto right = std::move(operandStack.back());
-                        operandStack.pop_back();
-                        auto left = std::move(operandStack.back());
-                        operandStack.pop_back();
-                        Operator binaryOp = getOperatorFromString(op.tokenContent);
-                        operandStack.push_back(std::make_unique<BinaryOperator>(binaryOp, std::move(left), std::move(right)));
-                    }
+                    pushToOperand(op, operatorStack, operandStack);
+
+                    
                 }
                 operatorStack.pop_back();
+
+
+                if(operatorStack.back().type == TokenType::Function){
+                    Token function = operatorStack.back();
+                    operatorStack.pop_back();
+
+                    if(prevToken && prevToken->type != TokenType::LeftParentheses && prevToken->type != TokenType::Comma){
+                        functionArgumentsCountStack.back()++;
+                        std::cout << functionArgumentsCountStack.back() << std::endl;
+                    }
+
+                    std::vector<std::unique_ptr<Expression>> arguments;
+
+                    for(int i = 0; i < functionArgumentsCountStack.back(); i++){
+                        arguments.push_back(std::move(operandStack.back()));
+                        operandStack.pop_back();
+                    }
+
+                    std::reverse(arguments.begin(), arguments.end());
+                    operandStack.push_back(std::make_unique<Function>(function.tokenContent, std::move(arguments))); 
+
+                    functionArgumentsCountStack.pop_back();
+                }
             }
         }
 
@@ -110,19 +175,7 @@ namespace notlab{
             Token op = operatorStack.back();
                     operatorStack.pop_back();
 
-                    if(op.type == TokenType::UnaryMinus){
-                        auto unaryArgument = std::move(operandStack.back());
-                        operandStack.pop_back();
-                        operandStack.push_back(std::make_unique<UnaryOperator>(Operator::Minus, std::move(unaryArgument)));
-                    }
-                    else{
-                        auto right = std::move(operandStack.back());
-                        operandStack.pop_back();
-                        auto left = std::move(operandStack.back());
-                        operandStack.pop_back();
-                        Operator binaryOp = getOperatorFromString(op.tokenContent);
-                        operandStack.push_back(std::make_unique<BinaryOperator>(binaryOp, std::move(left), std::move(right)));
-                    }
+                    pushToOperand(op, operatorStack, operandStack);
         }
 
 

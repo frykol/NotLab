@@ -6,19 +6,24 @@
 #include "determinant.h"
 #include "linear_solve.h"
 
+#include "../equation_parser/tokenizer.h"
 #include "equation.h"
 
 int main(void){
 
-    std::string testString = "x1^2 + 3*x1 + 6";
+    std::string testString = "3^2+ 1+ max(sin(x1),2) * 10";
     
     notlab::Equation eq(testString);
 
-    notlab::MatrixF variableValues = notlab::MatrixF::fromList({{3}, {4}, {1}});
+    notlab::MatrixF variableValues = notlab::MatrixF::fromList({{3}});
+    //float y = eq.eval();
+     notlab::VectorF y = eq.eval(variableValues);
 
-    notlab::VectorF y = eq.eval(variableValues);
+     std::cout << y.toString() << std::endl;
 
-    std::cout << y.toString() << std::endl;
+    //notlab::tokenize(testString);
+
+    //std::cout << y << std::endl;
     
     return 0;
 }

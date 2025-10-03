@@ -2,12 +2,11 @@
 
 #include <vector>
 #include <string>
-#include <iostream>
 
 namespace notlab{
     
     enum class TokenType{
-        None = 0, Number, Variable, Operator, LeftParentheses, RightParentheses, UnaryMinus
+        None = 0, Number, Variable, Operator, LeftParentheses, RightParentheses, UnaryMinus, Function, Comma
     };
 
     struct Token{
@@ -29,7 +28,7 @@ namespace notlab{
 
         TokenType prev = tokens.back().type;
 
-        return prev == TokenType::Operator || prev == TokenType::LeftParentheses || prev == TokenType::UnaryMinus;
+        return prev == TokenType::Operator || prev == TokenType::LeftParentheses || prev == TokenType::UnaryMinus || prev == TokenType::Comma;
     }
 
     bool isVariableAllowed(const std::vector<Token>& tokens){
@@ -38,7 +37,7 @@ namespace notlab{
 
         TokenType prev = tokens.back().type;
 
-        return prev == TokenType::Operator || prev == TokenType::LeftParentheses || prev == TokenType::UnaryMinus;
+        return prev == TokenType::Operator || prev == TokenType::LeftParentheses || prev == TokenType::UnaryMinus || prev == TokenType::Comma;
     }
 
     bool isOperatorAllowed(const std::vector<Token>& tokens){
@@ -50,6 +49,20 @@ namespace notlab{
         return prev == TokenType::RightParentheses || prev == TokenType::Number || prev == TokenType::Variable;
     }
 
+    bool isCommaAllowed(const std::vector<Token>& tokens){
+        if(tokens.empty())
+            return false;
+
+        TokenType prev = tokens.back().type;
+        
+        return prev == TokenType::Number || prev == TokenType::Variable || prev == TokenType::RightParentheses;
+    }
+
+    void debugDump(const std::vector<Token>& tokens){
+        for(const Token token : tokens){
+            std::cout << token.tokenContent << std::endl;
+        }
+    }
 
     /**
      * @brief Tokenizing equation string
@@ -88,6 +101,16 @@ namespace notlab{
 
             }
 
+            else if(equation[i] == ','){
+                if(isCommaAllowed(tokens)){
+                    tokens.push_back({TokenType::Comma, ","});
+                }
+                else{
+                    throw std::runtime_error(std::string("Illegal character before number: ") + equation[i]);
+                }
+                i++;
+            }
+
             else if(std::isalpha(equation[i])){
 
                 size_t variableStartPosition = i;
@@ -96,8 +119,15 @@ namespace notlab{
                     i++;
                 }
 
+                std::string nameOfVariableOrFunction = equation.substr(variableStartPosition, i - variableStartPosition);
+
                 if(isVariableAllowed(tokens)){
-                    tokens.push_back({TokenType::Variable, equation.substr(variableStartPosition, i - variableStartPosition)});
+                    if(i < equation.size() && equation[i] == '('){
+                        tokens.push_back({TokenType::Function, nameOfVariableOrFunction});
+                    }
+                    else{
+                        tokens.push_back({TokenType::Variable, nameOfVariableOrFunction});
+                    }
                 }
                 else{
                     throw std::runtime_error(std::string("Illegal character before variable: ") + equation[i]);
@@ -156,6 +186,9 @@ namespace notlab{
         if(tokens.back().type == TokenType::UnaryMinus || tokens.back().type == TokenType::Operator){
             throw std::runtime_error("Operator can't be placed at the end of equation");
         }
+
+
+        //debugDump(tokens);
 
         return tokens;
     }
