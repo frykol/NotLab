@@ -1,29 +1,30 @@
-#include <iostream>
-#include "vector.h"
-#include "matrix.h"
-#include "lu_decomposition.h"
-#include "inverse.h"
 #include "determinant.h"
+#include "inverse.h"
 #include "linear_solve.h"
+#include "lu_decomposition.h"
+#include "matrix.h"
+#include "vector.h"
+#include <iostream>
 
 #include "../equation_parser/tokenizer.h"
 #include "equation.h"
+#include "test.h"
 
-int main(void){
+int main(void) {
 
-    std::string testString = "3^2+ 1+ max(sin(x1),2) * 10";
-    
-    notlab::Equation eq(testString);
+  std::string testString = "3^2+ 1+ max(sin(x1),2) * 10";
 
-    notlab::MatrixF variableValues = notlab::MatrixF::fromList({{3}});
-    //float y = eq.eval();
-     notlab::VectorF y = eq.eval(variableValues);
+  notlab::Equation eq(testString);
 
-     std::cout << y.toString() << std::endl;
+  notlab::MatrixF variableValues = notlab::MatrixF::fromList({{3}});
+  // float y = eq.eval();
+  notlab::VectorF y = eq.eval(variableValues);
 
-    //notlab::tokenize(testString);
+  std::cout << y.toString() << std::endl;
 
-    //std::cout << y << std::endl;
-    
-    return 0;
+  // notlab::tokenize(testString);
+
+  // std::cout << y << std::endl;
+  render();
+  return 0;
 }
