@@ -10,6 +10,8 @@
 #include "equation.h"
 #include "test.h"
 
+#include "Shader.h"
+
 int main(void) {
 
   std::string testString = "3^2+ 1+ max(sin(x1),2) * 10";
@@ -25,6 +27,7 @@ int main(void) {
   // notlab::tokenize(testString);
 
   // std::cout << y << std::endl;
+
   render();
   return 0;
 }
