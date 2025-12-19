@@ -3,7 +3,12 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <string>
-
+/**
+ * @class Shader
+ * @brief Create shaders for renderer
+ * @details
+ *   Create two Shaders, vertexShader and fragmentShader
+ */
 class Shader {
 private:
   unsigned int m_programId;
@@ -14,7 +19,20 @@ private:
   std::string m_vertexSource;
   std::string m_fragmentSource;
 
+  /**
+   * @brief Reading shader file
+   * 
+   * @param path path to a shader file
+   * @return std::string returns shader in form of string 
+   */
   std::string readShader(const std::string &path);
+  /**
+   * @brief Compiling shader for openGL
+   * 
+   * @param shaderType type of shader (vertex or fragment)
+   * @param shaderSource shader in from of string
+   * @return int status code infroming if compiling is success or failure
+   */
   int compileShader(GLenum shaderType, const std::string &shaderSource);
 
 public:

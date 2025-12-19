@@ -1,8 +1,11 @@
 #include "test.h"
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <iostream>
 
 #include "Shader.h"
+
+#include "figure.h"
 
 void render() {
   GLFWwindow *window;
@@ -18,6 +21,7 @@ void render() {
   /* Create a windowed mode window and its OpenGL context */
   window = glfwCreateWindow(640, 480, "GLFW CMake starter", NULL, NULL);
   if (!window) {
+    std::cout << "Window error" << std::endl;
     glfwTerminate();
     return;
   }
@@ -27,9 +31,18 @@ void render() {
 
   if (glewInit() != GLEW_OK) {
     glfwTerminate();
+    std::cout << "GLFW error" << std::endl;
     return;
   }
   glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
+
+
+  notlab::Figure f;
+  notlab::Figure f2;
+  notlab::Figure f3;
+
+
+  glfwMakeContextCurrent(window);
 
   Shader s("../renderer/vertex.shader", "../renderer/fragment.shader");
   s.compile();
@@ -59,14 +72,31 @@ void render() {
   /* Loop until the user closes the window */
   while (!glfwWindowShouldClose(window)) {
     /* Render here */
+    glfwMakeContextCurrent(window);
     glClear(GL_COLOR_BUFFER_BIT);
     s.bind();
     glBindVertexArray(VAO);
     glDrawArrays(GL_TRIANGLES, 0, 3);
     glBindVertexArray(0);
-
-    /* Swap front and back buffers */
     glfwSwapBuffers(window);
+
+    glfwMakeContextCurrent(f.getWindow());   // ← dodamy getter
+    glClear(GL_COLOR_BUFFER_BIT);
+    s.bind();
+    glBindVertexArray(VAO);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glBindVertexArray(0);
+    glfwSwapBuffers(f.getWindow());
+
+    // figure 2
+    glfwMakeContextCurrent(f2.getWindow());
+    glClear(GL_COLOR_BUFFER_BIT);
+    glfwSwapBuffers(f2.getWindow());
+
+    // figure 3
+    glfwMakeContextCurrent(f3.getWindow());
+    glClear(GL_COLOR_BUFFER_BIT);
+    glfwSwapBuffers(f3.getWindow());
 
     /* Poll for and process events */
     glfwPollEvents();

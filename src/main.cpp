@@ -8,12 +8,13 @@
 
 #include "../equation_parser/tokenizer.h"
 #include "equation.h"
-#include "test.h"
+// #include "test.h"
+#include "renderer.h"
 
 #include "Shader.h"
 
 int main(void) {
-
+  notlab::Renderer::instance().init();
   std::string testString = "3^2+ 1+ max(sin(x1),2) * 10";
 
   notlab::Equation eq(testString);
@@ -27,7 +28,13 @@ int main(void) {
   // notlab::tokenize(testString);
 
   // std::cout << y << std::endl;
+  int fid = notlab::Renderer::instance().addFigure();
+  notlab::Renderer::instance().testPlot(fid);
+  notlab::Renderer::instance().addFigure();
 
-  render();
+
+  notlab::Renderer::instance().render();
+
+  //render();
   return 0;
 }

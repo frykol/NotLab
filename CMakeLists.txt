@@ -10,7 +10,6 @@ find_package( OpenGL REQUIRED)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_subdirectory(glfw)
 add_subdirectory(renderer)
 
 include_directories(${CMAKE_SOURCE_DIR}/core)
@@ -19,5 +18,5 @@ include_directories(${CMAKE_SOURCE_DIR}/equation_parser)
 
 add_executable(NotLab src/main.cpp)
 
-target_link_libraries(NotLab PUBLIC glfw graphics)
+target_link_libraries(NotLab PUBLIC graphics)
 

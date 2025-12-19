@@ -1,0 +1,6 @@
+[submodule "renderer/glfw"]
+	path = renderer/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "renderer/glew"]
+	path = renderer/glew
+	url = https://github.com/Perlmint/glew-cmake.git
