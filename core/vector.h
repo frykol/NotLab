@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <iostream>
 
 namespace notlab
 {
@@ -43,14 +44,14 @@ namespace notlab
              */
             Vector(std::initializer_list<T> list): m_data(list) {}
 
+            
+
+        public:
             /**
              * @brief Private constructor from size (default-initialized elements).
              * @param cap Vector size.
              */
             explicit Vector(size_t cap): m_data(cap) {}
-
-        public:
-
             /**
              * @brief Create a new vector of zeros.
              * @param n Size of the new vector.
@@ -68,6 +69,38 @@ namespace notlab
              */
             static Vector<T> fromList(std::initializer_list<T> list){
                 return Vector<T>(list);
+            }
+
+            //TODO: Add description
+            static Vector<T> fromRange(T from, T to, T change){
+                if(change == 0){
+                    throw std::runtime_error("Change cant be zero");
+                }
+                if(from == to){
+                    return Vector<T>(1);
+                }
+                if((from - to) * change > 0 ){
+                    throw std::runtime_error("Wrong change value");
+                }
+                size_t numberOfElements = std::abs(from-to) / change;
+                Vector<T> vectorFromRange(0);
+                const double epsilon = 0.0001f;
+                if(from > to){
+                    while(from >= to - epsilon){
+                        vectorFromRange.addBack(from);
+                        from += change;
+                    }
+                    return vectorFromRange;
+                }
+
+                if(from < to){
+                    while(from <= to + epsilon){
+                        vectorFromRange.addBack(from);
+                        from += change;
+                    }
+                    return vectorFromRange;
+                }
+                return vectorFromRange;
             }
 
             /**
@@ -120,6 +153,37 @@ namespace notlab
             void addFront(const Vector<T>& vector, size_t from, size_t to){
                 m_data.insert(m_data.end(), vector.m_data.begin() + from, vector.m_data.begin() + to);
             }
+
+
+            //TODO: Add description
+            T min() const{
+                if(m_data.size() == 0){
+                    return 0;
+                }
+
+                T min = m_data[0];
+                for(size_t i = 1; i < m_data.size(); i++){
+                    if(m_data[i] < min){
+                        min = m_data[i];
+                    }
+                }
+                return min;
+            }
+
+            T max() const{
+                if(m_data.size() == 0){
+                    return 0;
+                }
+
+                T max = m_data[0];
+                for(size_t i = 1; i < m_data.size(); i++){
+                    if(m_data[i] > max){
+                        max = m_data[i];
+                    }
+                }
+                return max;
+            }
+
 
             /**
              * @brief Get the Data object

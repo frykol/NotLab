@@ -3,6 +3,9 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <string>
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 /**
  * @class Shader
  * @brief Create shaders for renderer
@@ -27,7 +30,7 @@ private:
    */
   std::string readShader(const std::string &path);
   /**
-   * @brief Compiling shader for openGL
+   * @brief Compiling shader for OpenGL
    * 
    * @param shaderType type of shader (vertex or fragment)
    * @param shaderSource shader in from of string
@@ -40,6 +43,9 @@ public:
       : m_vertexSource(vertexS), m_fragmentSource(fragmentS) {}
 
   void compile();
+
+  void setMat4(const std::string& uniformName, const glm::mat4& matrix);
+  void setVec3(const std::string& uniformName, const glm::vec3& vector);
 
   void bind();
   void unbind();

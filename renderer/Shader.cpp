@@ -54,3 +54,13 @@ void Shader::compile() {
 }
 
 void Shader::bind() { glUseProgram(m_programId); }
+
+
+void Shader::setMat4(const std::string& uniformName, const glm::mat4& matrix){
+    int loc = glGetUniformLocation(m_programId, uniformName.c_str());
+    if (loc == -1) std::cerr << "Uniform not found: " << uniformName << "\n";
+    glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(matrix));
+}
+void Shader::setVec3(const std::string& uniformName, const glm::vec3& vector){
+  glUniform3f(glGetUniformLocation(m_programId, uniformName.c_str()), vector.x, vector.y, vector.z);
+}

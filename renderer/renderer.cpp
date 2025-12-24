@@ -63,7 +63,7 @@ namespace notlab{
         return fig.m_Id;
     }
 
-    void Renderer::testPlot(int figureId){
+    void Renderer::testPlot(int figureId, VectorF& x, VectorF& y){
         if(m_Status != Status::Ready){
             return;
         }
@@ -72,7 +72,30 @@ namespace notlab{
         if(&figure == m_ErrorFigure){
             return;
         }
-        figure.plot();
+        figure.prepareData(x,y);
+        //figure.plot();
+    }
+
+    void Renderer::setLabelX(int fiugreId, const std::string& labelX){
+        Figure& fig = findFigure(fiugreId);
+        if(&fig == m_ErrorFigure){
+            return;
+        }
+        fig.setLabelX(labelX);
+    }
+    void Renderer::setLabelY(int fiugreId, const std::string& labelY){
+        Figure& fig = findFigure(fiugreId);
+        if(&fig == m_ErrorFigure){
+            return;
+        }
+        fig.setLabelY(labelY);
+    }
+    void Renderer::setTitle(int fiugreId, const std::string& title){
+        Figure& fig = findFigure(fiugreId);
+        if(&fig == m_ErrorFigure){
+            return;
+        }
+        fig.setTitle(title);
     }
 
     void Renderer::render(){
@@ -85,14 +108,16 @@ namespace notlab{
             glfwPollEvents();
                 
             for(auto figure = m_Figures.begin(); figure != m_Figures.end();){
+
                 GLFWwindow* win = figure->get()->getWindow();
+                glfwMakeContextCurrent(win);
+                
                 if(glfwWindowShouldClose(win)){
                     figure = m_Figures.erase(figure);
                     std::cout << "Zostało: " << m_Figures.size() << "okien" << std::endl;
                     continue;
                 }
                 
-                glfwMakeContextCurrent(win);
                 glClear(GL_COLOR_BUFFER_BIT);
                 figure->get()->render();
                 glfwSwapBuffers(win);
@@ -105,6 +130,9 @@ namespace notlab{
                 m_isRunning = false;
             }
         }
+        m_Figures.clear();
         delete m_ErrorFigure;
+        glfwMakeContextCurrent(nullptr);
+        glfwTerminate();
     }
 }

@@ -8,6 +8,9 @@
 
 #include <memory>
 
+#include <../core/vector.h>
+
+
 namespace notlab{
     class Renderer{
         private:
@@ -38,7 +41,10 @@ namespace notlab{
             void init();
             void render();
             int addFigure(const std::string& windowName="figure", int windowWidth = 640, int windowHeight = 480);
-            void testPlot(int figureId);
+            void testPlot(int figureId, VectorF& x, VectorF& y);
+            void setLabelX(int fiugreId, const std::string& labelX);
+            void setLabelY(int fiugreId, const std::string& labelY);
+            void setTitle(int fiugreId, const std::string& title);
 
 
 

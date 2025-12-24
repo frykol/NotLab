@@ -4,3 +4,9 @@
 [submodule "renderer/glew"]
 	path = renderer/glew
 	url = https://github.com/Perlmint/glew-cmake.git
+[submodule "renderer/freetype"]
+	path = renderer/freetype
+	url = https://github.com/freetype/freetype.git
+[submodule "renderer/glm"]
+	path = renderer/glm
+	url = https://github.com/g-truc/glm.git
