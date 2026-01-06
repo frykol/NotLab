@@ -37,15 +37,16 @@ namespace notlab{
             void init();
             void initCallbacks();
 
-            virtual void onDrag(const glm::vec2& delta);
+            virtual void onDrag(double xpos, double ypos, const glm::vec2& delta) {};
             virtual void onCursorMove(double xpos, double ypos);
-            virtual void onCursorScroll(double xoffset, double yoffset);
+            virtual void onCursorScroll(double xoffset, double yoffset) {};
             virtual void onMouseButton(int button, int action, int mods);
 
         public:
             void render();
 
-            virtual ~FigureBase() = default;
+            explicit FigureBase(std::string windowName, int width, int height) :m_WindowName(windowName), m_Width(width), m_Height(height){}
+            virtual ~FigureBase() {};
 
 
 

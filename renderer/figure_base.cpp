@@ -2,6 +2,8 @@
 
 namespace notlab{
     
+    //FigureBase::~FigureBase();
+
     void FigureBase::initCallbacks(){
         glfwSetWindowUserPointer(m_Window, this);
 
@@ -18,12 +20,6 @@ namespace notlab{
                 if (!self || !self->m_IsDragging) return;
 
                 self->onCursorMove(xpos, ypos);
-
-                
-
-                // // UWAGA: GLFW cursor y rośnie w dół, a Ty masz ortho z y w górę
-                // self->m_Camera.pan.x += delta.x;
-                // self->m_Camera.pan.y -= delta.y; // odwróć oś Y
         });
 
         glfwSetScrollCallback(m_Window,
@@ -31,40 +27,12 @@ namespace notlab{
                 auto* self = static_cast<FigureBase*>(glfwGetWindowUserPointer(w));
                 if(!self) return;
                 self->onCursorScroll(xoffset, yoffset);
-
-                // if(yoffset > 0 && self->m_Camera.zoom >= 5.0f){
-                // self->m_Camera.zoom = 5.0f;
-                // return;
-                // }
-                // if(yoffset < 0 && self->m_Camera.zoom <= 0.5f){
-                // self->m_Camera.zoom = 0.5;
-
-                // return;
-                // }
-
-                // int fbw, fbh;
-                // glfwGetFramebufferSize(w, &fbw, &fbh);
-
-                // double mx, my;
-                // glfwGetCursorPos(w, &mx, &my);
-                // float sx = (float)mx;
-                // float sy = (float)(fbh - my);
-                // self->m_LastMouseScrollPos.x = sx;
-                // self->m_LastMouseScrollPos.y = sy;
-
-
-                // if(yoffset > 0){
-                // self->m_Camera.zoom *= 1.1f;
-                // }
-                // else{
-                // self->m_Camera.zoom *= 0.9f;
-                // }
         });
     }
 
     void FigureBase::beginFrame(){
         glfwGetFramebufferSize(m_Window, &m_Fbw, &m_Fbh);
-        //glViewport(0, 0, m_Fbw, m_Fbh);
+        glViewport(0, 0, m_Fbw, m_Fbh);
     }
 
     void FigureBase::render(){
@@ -78,7 +46,7 @@ namespace notlab{
         glm::vec2 delta = cur - m_LastMousePos;
         m_LastMousePos = cur;
 
-        onDrag(delta);
+        onDrag(xpos, ypos, delta);
     }
 
     void FigureBase::onMouseButton(int button, int action, int mods){

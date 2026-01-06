@@ -9,6 +9,8 @@
 #include "text.h"
 #include "../core/vector.h"
 
+#include "figure_base.h"
+
 namespace notlab{
 
     struct Camera2D{
@@ -24,15 +26,12 @@ namespace notlab{
         glm::vec2 a, b;
     };
 
-    class Figure{
+    class Figure : public FigureBase{
         private:
             int m_Id;
 
             static int s_Counter;
-        
-            GLFWwindow* m_Window = nullptr;
-            Shader* m_Shader = nullptr;
-            Text* m_Text = nullptr;
+    
             Camera2D m_Camera;
 
             Rect2D m_PlotBounds;
@@ -44,20 +43,15 @@ namespace notlab{
 
             int m_NumberOfPoints;
 
-            std::string m_WindowName;
-            unsigned int m_Width;
-            unsigned int m_Height;
+            glm::mat4 m_Model{1.0f};
+            glm::mat4 m_View{1.0f};
+            glm::mat4 m_Projection{1.0f};
 
-            
             unsigned int m_VAO;
             unsigned int m_VBO;
 
             unsigned int m_LineVAO;
             unsigned int m_LineVBO;
-
-            bool m_IsDragging;
-            glm::vec2 m_LastMousePos{0.0f, 0.0f};
-            glm::vec2 m_LastMouseScrollPos{0.0f, 0.0f};
 
             Figure(int id);
             void prepareAxis(const Rect2D& rect, float xmin, float xmax, float ymin, float ymax);
@@ -76,17 +70,20 @@ namespace notlab{
             glm::vec2 worldClamp(const glm::vec2& world) const;
             size_t findClosestIndexX(float dataX) const;
 
-            void renderData();
+
+            void calculateMatrixes();
+            void renderPlot();
             void renderAxis();
-            void renderUI(const glm::mat4& projection, const glm::mat4& view);
+
+            void renderScene() override;
+            void renderUI() override;
+
+
+            void onDrag(double xpos, double ypos, const glm::vec2& delta) override;
+            virtual void onCursorScroll(double xoffset, double yoffset) override;
 
         public:
-            void render();  
-
-            
-            void plot();
             void prepareData(VectorF &x, VectorF &y);
-            void setupInput();
 
             void setTitle(const std::string& title) { m_Title = title; }
             void setLabelX(const std::string& labelX) { m_LabelX = labelX; }
@@ -94,7 +91,7 @@ namespace notlab{
 
             
             Figure(const std::string& windowName, int windowWidth, int windowHeight);
-            ~Figure();
+            ~Figure() override;
             
             GLFWwindow* getWindow(){
                 return m_Window;
